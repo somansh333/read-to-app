@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import Navbar from "@/components/Navbar";
 import ProductCard from "@/components/ProductCard";
 import { ShoppingBag, TrendingUp, Users, Shield } from "lucide-react";
+import thaparCampus from "@/assets/thapar-campus.jpg";
 
 const Index = () => {
   const [featuredProducts, setFeaturedProducts] = useState<any[]>([]);
@@ -32,14 +33,21 @@ const Index = () => {
     <div className="min-h-screen bg-background">
       <Navbar />
       
-      {/* Hero Section */}
-      <section className="bg-gradient-to-br from-primary/10 to-secondary py-20">
-        <div className="container mx-auto px-4 text-center">
-          <ShoppingBag className="h-16 w-16 text-primary mx-auto mb-6" />
-          <h1 className="text-4xl md:text-5xl font-bold mb-4">
+      {/* Hero Section with Background */}
+      <section className="relative min-h-[600px] flex items-center">
+        <div 
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+          style={{ backgroundImage: `url(${thaparCampus})` }}
+        >
+          <div className="absolute inset-0 bg-black/60" />
+        </div>
+        
+        <div className="container mx-auto px-4 text-center relative z-10 py-20">
+          <ShoppingBag className="h-16 w-16 text-white mx-auto mb-6" />
+          <h1 className="text-4xl md:text-5xl font-bold mb-4 text-white">
             Welcome to Thapar OLX
           </h1>
-          <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
+          <p className="text-xl mb-8 max-w-2xl mx-auto text-white/90">
             Buy and sell within the campus community. Safe, simple, and convenient marketplace for Thapar students.
           </p>
           <div className="flex gap-4 justify-center">
@@ -47,7 +55,9 @@ const Index = () => {
               <Button size="lg">Browse Products</Button>
             </Link>
             <Link to="/create-listing">
-              <Button size="lg" variant="outline">Start Selling</Button>
+              <Button size="lg" variant="outline" className="bg-white/10 text-white border-white/20 hover:bg-white/20">
+                Start Selling
+              </Button>
             </Link>
           </div>
         </div>
