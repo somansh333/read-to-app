@@ -22,7 +22,7 @@ const listingSchema = z.object({
 const CreateListing = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
-  const [categories, setCategories] = useState<any[]>([]);
+  const [categories, setCategories] = useState([]);
   const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -31,7 +31,7 @@ const CreateListing = () => {
     condition: "good",
     image_url: "",
   });
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState(null);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -50,7 +50,7 @@ const CreateListing = () => {
     if (data) setCategories(data);
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
 
@@ -77,7 +77,7 @@ const CreateListing = () => {
         description: "Your listing has been created.",
       });
       navigate("/dashboard");
-    } catch (error: any) {
+    } catch (error) {
       if (error instanceof z.ZodError) {
         toast({
           title: "Validation Error",
@@ -124,43 +124,39 @@ const CreateListing = () => {
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                   placeholder="Describe your item..."
-                  rows={5}
                   required
                 />
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="price">Price (₹)</Label>
-                  <Input
-                    id="price"
-                    type="number"
-                    step="0.01"
-                    value={formData.price}
-                    onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-                    placeholder="1000"
-                    required
-                  />
-                </div>
+              <div className="space-y-2">
+                <Label htmlFor="price">Price (₹)</Label>
+                <Input
+                  id="price"
+                  type="number"
+                  value={formData.price}
+                  onChange={(e) => setFormData({ ...formData, price: e.target.value })}
+                  placeholder="0"
+                  required
+                />
+              </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="category">Category</Label>
-                  <Select
-                    value={formData.category_id}
-                    onValueChange={(value) => setFormData({ ...formData, category_id: value })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select category" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {categories.map((cat) => (
-                        <SelectItem key={cat.id} value={cat.id}>
-                          {cat.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
+              <div className="space-y-2">
+                <Label htmlFor="category">Category</Label>
+                <Select
+                  value={formData.category_id}
+                  onValueChange={(value) => setFormData({ ...formData, category_id: value })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select a category" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {categories.map((cat) => (
+                      <SelectItem key={cat.id} value={cat.id}>
+                        {cat.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
 
               <div className="space-y-2">
@@ -182,7 +178,7 @@ const CreateListing = () => {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="image_url">Image URL (optional)</Label>
+                <Label htmlFor="image_url">Image URL (Optional)</Label>
                 <Input
                   id="image_url"
                   type="url"

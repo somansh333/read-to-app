@@ -10,8 +10,8 @@ import { Plus } from "lucide-react";
 
 const Dashboard = () => {
   const navigate = useNavigate();
-  const [user, setUser] = useState<any>(null);
-  const [products, setProducts] = useState<any[]>([]);
+  const [user, setUser] = useState(null);
+  const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -33,7 +33,7 @@ const Dashboard = () => {
     return () => subscription.unsubscribe();
   }, [navigate]);
 
-  const fetchUserProducts = async (userId: string) => {
+  const fetchUserProducts = async (userId) => {
     setLoading(true);
     const { data } = await supabase
       .from("products")
@@ -48,7 +48,7 @@ const Dashboard = () => {
     setLoading(false);
   };
 
-  const handleDelete = async (productId: string) => {
+  const handleDelete = async (productId) => {
     const { error } = await supabase.from("products").delete().eq("id", productId);
 
     if (error) {
@@ -66,7 +66,7 @@ const Dashboard = () => {
     }
   };
 
-  const handleStatusChange = async (productId: string, newStatus: string) => {
+  const handleStatusChange = async (productId, newStatus) => {
     const { error } = await supabase
       .from("products")
       .update({ status: newStatus })

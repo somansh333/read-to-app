@@ -9,8 +9,8 @@ import { Search } from "lucide-react";
 
 const Browse = () => {
   const [searchParams, setSearchParams] = useSearchParams();
-  const [products, setProducts] = useState<any[]>([]);
-  const [categories, setCategories] = useState<any[]>([]);
+  const [products, setProducts] = useState([]);
+  const [categories, setCategories] = useState([]);
   const [searchTerm, setSearchTerm] = useState(searchParams.get("search") || "");
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [loading, setLoading] = useState(true);

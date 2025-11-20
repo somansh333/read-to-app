@@ -15,22 +15,15 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
-interface ProductCardProps {
-  product: any;
-  isOwner?: boolean;
-  onDelete?: (id: string) => void;
-  onStatusChange?: (id: string, status: string) => void;
-}
-
-const ProductCard = ({ product, isOwner, onDelete, onStatusChange }: ProductCardProps) => {
-  const conditionColors: Record<string, string> = {
+const ProductCard = ({ product, isOwner, onDelete, onStatusChange }) => {
+  const conditionColors = {
     new: "bg-green-500",
     like_new: "bg-blue-500",
     good: "bg-yellow-500",
     fair: "bg-orange-500",
   };
 
-  const statusColors: Record<string, string> = {
+  const statusColors = {
     available: "bg-green-500",
     sold: "bg-red-500",
     reserved: "bg-yellow-500",
