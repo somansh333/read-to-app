@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -10,6 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "@/hooks/use-toast";
 import Navbar from "@/components/Navbar";
 import { z } from "zod";
+import { getCategories, addProduct } from "@/utils/localStorage";
 
 const listingSchema = z.object({
   title: z.string().min(3, "Title must be at least 3 characters").max(100),
@@ -21,6 +22,7 @@ const listingSchema = z.object({
 
 const CreateListing = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [loading, setLoading] = useState(false);
   const [categories, setCategories] = useState([]);
   const [formData, setFormData] = useState({
@@ -31,24 +33,17 @@ const CreateListing = () => {
     condition: "good",
     image_url: "",
   });
-  const [user, setUser] = useState(null);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (!session) {
-        navigate("/auth");
-      } else {
-        setUser(session.user);
-      }
-    });
+    if (!user) {
+      navigate("/auth");
+    }
+  }, [user, navigate]);
 
-    fetchCategories();
-  }, [navigate]);
-
-  const fetchCategories = async () => {
-    const { data } = await supabase.from("categories").select("*");
-    if (data) setCategories(data);
-  };
+  useEffect(() => {
+    const cats = getCategories();
+    setCategories(cats);
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -60,7 +55,7 @@ const CreateListing = () => {
         price: parseFloat(formData.price),
       });
 
-      const { error } = await supabase.from("products").insert([{
+      addProduct({
         title: validated.title,
         description: validated.description,
         price: validated.price,
@@ -68,9 +63,7 @@ const CreateListing = () => {
         condition: validated.condition,
         user_id: user.id,
         image_url: formData.image_url || null,
-      }]);
-
-      if (error) throw error;
+      });
 
       toast({
         title: "Success!",
@@ -124,28 +117,44 @@ const CreateListing = () => {
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                   placeholder="Describe your item..."
+                  rows={4}
                   required
                 />
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="price">Price (₹)</Label>
-                <Input
-                  id="price"
-                  type="number"
-                  value={formData.price}
-                  onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-                  placeholder="0"
-                  required
-                />
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="price">Price (₹)</Label>
+                  <Input
+                    id="price"
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    value={formData.price}
+                    onChange={(e) => setFormData({ ...formData, price: e.target.value })}
+                    required
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="condition">Condition</Label>
+                  <Select value={formData.condition} onValueChange={(value) => setFormData({ ...formData, condition: value })}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="new">New</SelectItem>
+                      <SelectItem value="like_new">Like New</SelectItem>
+                      <SelectItem value="good">Good</SelectItem>
+                      <SelectItem value="fair">Fair</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="category">Category</Label>
-                <Select
-                  value={formData.category_id}
-                  onValueChange={(value) => setFormData({ ...formData, category_id: value })}
-                >
+                <Select value={formData.category_id} onValueChange={(value) => setFormData({ ...formData, category_id: value })}>
                   <SelectTrigger>
                     <SelectValue placeholder="Select a category" />
                   </SelectTrigger>
@@ -160,25 +169,7 @@ const CreateListing = () => {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="condition">Condition</Label>
-                <Select
-                  value={formData.condition}
-                  onValueChange={(value) => setFormData({ ...formData, condition: value })}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="new">New</SelectItem>
-                    <SelectItem value="like_new">Like New</SelectItem>
-                    <SelectItem value="good">Good</SelectItem>
-                    <SelectItem value="fair">Fair</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="image_url">Image URL (Optional)</Label>
+                <Label htmlFor="image_url">Image URL (optional)</Label>
                 <Input
                   id="image_url"
                   type="url"

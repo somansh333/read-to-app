@@ -1,14 +1,14 @@
 import { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import ProductCard from "@/components/ProductCard";
 import Navbar from "@/components/Navbar";
 import { Search } from "lucide-react";
+import { getProducts, getCategories, getUserById } from "@/utils/localStorage";
 
 const Browse = () => {
-  const [searchParams, setSearchParams] = useSearchParams();
+  const [searchParams] = useSearchParams();
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [searchTerm, setSearchTerm] = useState(searchParams.get("search") || "");
@@ -21,39 +21,40 @@ const Browse = () => {
   }, [searchParams]);
 
   useEffect(() => {
-    fetchCategories();
-    fetchProducts();
-  }, []);
+    fetchData();
+  }, [selectedCategory]);
 
-  const fetchCategories = async () => {
-    const { data } = await supabase.from("categories").select("*");
-    if (data) setCategories(data);
-  };
-
-  const fetchProducts = async () => {
+  const fetchData = () => {
     setLoading(true);
-    let query = supabase
-      .from("products")
-      .select(`
-        *,
-        categories (name),
-        profiles (full_name, phone)
-      `)
-      .eq("status", "available")
-      .order("created_at", { ascending: false });
+    
+    // Get categories
+    const cats = getCategories();
+    setCategories(cats);
 
+    // Get products
+    let allProducts = getProducts()
+      .filter(p => p.status === 'available')
+      .map(product => {
+        const category = cats.find(c => c.id === product.category_id);
+        const seller = getUserById(product.user_id);
+        return {
+          ...product,
+          categories: category ? { name: category.name } : null,
+          profiles: seller ? { full_name: seller.full_name, phone: seller.phone } : null,
+        };
+      });
+
+    // Filter by category
     if (selectedCategory !== "all") {
-      query = query.eq("category_id", selectedCategory);
+      allProducts = allProducts.filter(p => p.category_id === selectedCategory);
     }
 
-    const { data } = await query;
-    if (data) setProducts(data);
+    // Sort by date
+    allProducts.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+    setProducts(allProducts);
     setLoading(false);
   };
-
-  useEffect(() => {
-    fetchProducts();
-  }, [selectedCategory]);
 
   const filteredProducts = products.filter((product) =>
     product.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
