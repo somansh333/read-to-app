@@ -1,6 +1,4 @@
-import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { useAuth } from "@/contexts/AuthContext";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -9,22 +7,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "@/hooks/use-toast";
 import Navbar from "@/components/Navbar";
-import { z } from "zod";
-import { getCategories, addProduct } from "@/utils/localStorage";
-
-const listingSchema = z.object({
-  title: z.string().min(3, "Title must be at least 3 characters").max(100),
-  description: z.string().min(10, "Description must be at least 10 characters").max(1000),
-  price: z.number().positive("Price must be greater than 0"),
-  category_id: z.string().min(1, "Please select a category"),
-  condition: z.enum(["new", "like_new", "good", "fair"]),
-});
+import { CATEGORIES } from "@/data/mockData";
 
 const CreateListing = () => {
-  const navigate = useNavigate();
-  const { user } = useAuth();
-  const [loading, setLoading] = useState(false);
-  const [categories, setCategories] = useState([]);
   const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -34,59 +19,33 @@ const CreateListing = () => {
     image_url: "",
   });
 
-  useEffect(() => {
-    if (!user) {
-      navigate("/auth");
-    }
-  }, [user, navigate]);
-
-  useEffect(() => {
-    const cats = getCategories();
-    setCategories(cats);
-  }, []);
-
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
-    setLoading(true);
-
-    try {
-      const validated = listingSchema.parse({
-        ...formData,
-        price: parseFloat(formData.price),
-      });
-
-      addProduct({
-        title: validated.title,
-        description: validated.description,
-        price: validated.price,
-        category_id: validated.category_id,
-        condition: validated.condition,
-        user_id: user.id,
-        image_url: formData.image_url || null,
-      });
-
+    
+    // Simple validation
+    if (!formData.title || !formData.description || !formData.price || !formData.category_id) {
       toast({
-        title: "Success!",
-        description: "Your listing has been created.",
+        title: "Error",
+        description: "Please fill in all required fields",
+        variant: "destructive",
       });
-      navigate("/dashboard");
-    } catch (error) {
-      if (error instanceof z.ZodError) {
-        toast({
-          title: "Validation Error",
-          description: error.errors[0].message,
-          variant: "destructive",
-        });
-      } else {
-        toast({
-          title: "Error",
-          description: error.message || "Failed to create listing",
-          variant: "destructive",
-        });
-      }
-    } finally {
-      setLoading(false);
+      return;
     }
+
+    toast({
+      title: "Success!",
+      description: "Your listing has been created (demo mode - not saved)",
+    });
+    
+    // Reset form
+    setFormData({
+      title: "",
+      description: "",
+      price: "",
+      category_id: "",
+      condition: "good",
+      image_url: "",
+    });
   };
 
   return (
@@ -100,7 +59,7 @@ const CreateListing = () => {
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="space-y-2">
-                <Label htmlFor="title">Title</Label>
+                <Label htmlFor="title">Title *</Label>
                 <Input
                   id="title"
                   value={formData.title}
@@ -111,7 +70,7 @@ const CreateListing = () => {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="description">Description</Label>
+                <Label htmlFor="description">Description *</Label>
                 <Textarea
                   id="description"
                   value={formData.description}
@@ -124,7 +83,7 @@ const CreateListing = () => {
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="price">Price (₹)</Label>
+                  <Label htmlFor="price">Price (₹) *</Label>
                   <Input
                     id="price"
                     type="number"
@@ -153,13 +112,13 @@ const CreateListing = () => {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="category">Category</Label>
+                <Label htmlFor="category">Category *</Label>
                 <Select value={formData.category_id} onValueChange={(value) => setFormData({ ...formData, category_id: value })}>
                   <SelectTrigger>
                     <SelectValue placeholder="Select a category" />
                   </SelectTrigger>
                   <SelectContent>
-                    {categories.map((cat) => (
+                    {CATEGORIES.map((cat) => (
                       <SelectItem key={cat.id} value={cat.id}>
                         {cat.name}
                       </SelectItem>
@@ -179,8 +138,8 @@ const CreateListing = () => {
                 />
               </div>
 
-              <Button type="submit" className="w-full" disabled={loading}>
-                {loading ? "Creating..." : "Create Listing"}
+              <Button type="submit" className="w-full">
+                Create Listing (Demo)
               </Button>
             </form>
           </CardContent>
