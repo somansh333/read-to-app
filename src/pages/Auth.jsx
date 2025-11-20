@@ -43,7 +43,7 @@ const Auth = () => {
     return () => subscription.unsubscribe();
   }, [navigate]);
 
-  const handleSignUp = async (e: React.FormEvent) => {
+  const handleSignUp = async (e) => {
     e.preventDefault();
     setLoading(true);
 
@@ -68,7 +68,7 @@ const Auth = () => {
         title: "Success!",
         description: "Account created successfully. You can now log in.",
       });
-    } catch (error: any) {
+    } catch (error) {
       if (error instanceof z.ZodError) {
         toast({
           title: "Validation Error",
@@ -87,7 +87,7 @@ const Auth = () => {
     }
   };
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
     setLoading(true);
 
@@ -100,7 +100,7 @@ const Auth = () => {
       });
 
       if (error) throw error;
-    } catch (error: any) {
+    } catch (error) {
       if (error instanceof z.ZodError) {
         toast({
           title: "Validation Error",
@@ -126,8 +126,8 @@ const Auth = () => {
           <div className="flex justify-center mb-4">
             <ShoppingBag className="h-12 w-12 text-primary" />
           </div>
-          <CardTitle className="text-2xl">Thapar OLX</CardTitle>
-          <CardDescription>Buy and sell within the campus community</CardDescription>
+          <CardTitle>Thapar OLX</CardTitle>
+          <CardDescription>Your campus marketplace</CardDescription>
         </CardHeader>
         <CardContent>
           <Tabs defaultValue="login" className="w-full">
@@ -143,7 +143,7 @@ const Auth = () => {
                   <Input
                     id="login-email"
                     type="email"
-                    placeholder="your.email@thapar.edu"
+                    placeholder="your@email.com"
                     value={loginData.email}
                     onChange={(e) => setLoginData({ ...loginData, email: e.target.value })}
                     required
@@ -160,7 +160,7 @@ const Auth = () => {
                   />
                 </div>
                 <Button type="submit" className="w-full" disabled={loading}>
-                  {loading ? "Logging in..." : "Log In"}
+                  {loading ? "Logging in..." : "Login"}
                 </Button>
               </form>
             </TabsContent>
@@ -171,7 +171,6 @@ const Auth = () => {
                   <Label htmlFor="signup-name">Full Name</Label>
                   <Input
                     id="signup-name"
-                    type="text"
                     placeholder="John Doe"
                     value={signUpData.fullName}
                     onChange={(e) => setSignUpData({ ...signUpData, fullName: e.target.value })}
@@ -183,7 +182,7 @@ const Auth = () => {
                   <Input
                     id="signup-email"
                     type="email"
-                    placeholder="your.email@thapar.edu"
+                    placeholder="your@email.com"
                     value={signUpData.email}
                     onChange={(e) => setSignUpData({ ...signUpData, email: e.target.value })}
                     required

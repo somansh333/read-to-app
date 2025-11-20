@@ -8,7 +8,7 @@ import { ShoppingBag, TrendingUp, Users, Shield } from "lucide-react";
 import thaparCampus from "@/assets/thapar-campus.jpg";
 
 const Index = () => {
-  const [featuredProducts, setFeaturedProducts] = useState<any[]>([]);
+  const [featuredProducts, setFeaturedProducts] = useState([]);
 
   useEffect(() => {
     fetchFeaturedProducts();
