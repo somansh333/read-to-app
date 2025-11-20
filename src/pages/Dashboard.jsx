@@ -1,90 +1,60 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { toast } from "@/hooks/use-toast";
 import Navbar from "@/components/Navbar";
 import ProductCard from "@/components/ProductCard";
 import { Plus } from "lucide-react";
+import { getProductsByUser, getCategories, deleteProduct, updateProduct } from "@/utils/localStorage";
 
 const Dashboard = () => {
   const navigate = useNavigate();
-  const [user, setUser] = useState(null);
+  const { user } = useAuth();
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (!session) {
-        navigate("/auth");
-      } else {
-        setUser(session.user);
-        fetchUserProducts(session.user.id);
-      }
-    });
+    if (!user) {
+      navigate("/auth");
+    } else {
+      fetchUserProducts();
+    }
+  }, [user, navigate]);
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (!session) {
-        navigate("/auth");
-      }
-    });
-
-    return () => subscription.unsubscribe();
-  }, [navigate]);
-
-  const fetchUserProducts = async (userId) => {
+  const fetchUserProducts = () => {
     setLoading(true);
-    const { data } = await supabase
-      .from("products")
-      .select(`
-        *,
-        categories (name)
-      `)
-      .eq("user_id", userId)
-      .order("created_at", { ascending: false });
-
-    if (data) setProducts(data);
+    const categories = getCategories();
+    const userProducts = getProductsByUser(user.id).map(product => {
+      const category = categories.find(c => c.id === product.category_id);
+      return {
+        ...product,
+        categories: category ? { name: category.name } : null,
+      };
+    });
+    
+    userProducts.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+    setProducts(userProducts);
     setLoading(false);
   };
 
-  const handleDelete = async (productId) => {
-    const { error } = await supabase.from("products").delete().eq("id", productId);
-
-    if (error) {
-      toast({
-        title: "Error",
-        description: "Failed to delete product",
-        variant: "destructive",
-      });
-    } else {
-      toast({
-        title: "Success",
-        description: "Product deleted successfully",
-      });
-      if (user) fetchUserProducts(user.id);
-    }
+  const handleDelete = (productId) => {
+    deleteProduct(productId);
+    toast({
+      title: "Success",
+      description: "Product deleted successfully",
+    });
+    fetchUserProducts();
   };
 
-  const handleStatusChange = async (productId, newStatus) => {
-    const { error } = await supabase
-      .from("products")
-      .update({ status: newStatus })
-      .eq("id", productId);
-
-    if (error) {
-      toast({
-        title: "Error",
-        description: "Failed to update status",
-        variant: "destructive",
-      });
-    } else {
-      toast({
-        title: "Success",
-        description: "Status updated successfully",
-      });
-      if (user) fetchUserProducts(user.id);
-    }
+  const handleStatusChange = (productId, newStatus) => {
+    updateProduct(productId, { status: newStatus });
+    toast({
+      title: "Success",
+      description: "Status updated successfully",
+    });
+    fetchUserProducts();
   };
 
   return (

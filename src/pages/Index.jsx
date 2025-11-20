@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import Navbar from "@/components/Navbar";
 import ProductCard from "@/components/ProductCard";
 import { ShoppingBag, TrendingUp, Users, Shield } from "lucide-react";
 import thaparCampus from "@/assets/thapar-campus.jpg";
+import { getProducts, getCategories, getUserById } from "@/utils/localStorage";
 
 const Index = () => {
   const [featuredProducts, setFeaturedProducts] = useState([]);
@@ -14,19 +14,23 @@ const Index = () => {
     fetchFeaturedProducts();
   }, []);
 
-  const fetchFeaturedProducts = async () => {
-    const { data } = await supabase
-      .from("products")
-      .select(`
-        *,
-        categories (name),
-        profiles (full_name, phone)
-      `)
-      .eq("status", "available")
-      .order("created_at", { ascending: false })
-      .limit(6);
+  const fetchFeaturedProducts = () => {
+    const categories = getCategories();
+    const allProducts = getProducts()
+      .filter(p => p.status === 'available')
+      .slice(0, 6)
+      .map(product => {
+        const category = categories.find(c => c.id === product.category_id);
+        const seller = getUserById(product.user_id);
+        return {
+          ...product,
+          categories: category ? { name: category.name } : null,
+          profiles: seller ? { full_name: seller.full_name, phone: seller.phone } : null,
+        };
+      });
 
-    if (data) setFeaturedProducts(data);
+    allProducts.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+    setFeaturedProducts(allProducts);
   };
 
   return (
@@ -107,13 +111,11 @@ const Index = () => {
               ))}
             </div>
           )}
-          {featuredProducts.length > 0 && (
-            <div className="text-center mt-8">
-              <Link to="/browse">
-                <Button variant="outline" size="lg">View All Products</Button>
-              </Link>
-            </div>
-          )}
+          <div className="text-center mt-8">
+            <Link to="/browse">
+              <Button size="lg">View All Products</Button>
+            </Link>
+          </div>
         </div>
       </section>
     </div>

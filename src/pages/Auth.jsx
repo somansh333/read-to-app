@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -23,25 +23,16 @@ const loginSchema = z.object({
 
 const Auth = () => {
   const navigate = useNavigate();
+  const { user, signUp, signIn } = useAuth();
   const [loading, setLoading] = useState(false);
   const [signUpData, setSignUpData] = useState({ email: "", password: "", fullName: "" });
   const [loginData, setLoginData] = useState({ email: "", password: "" });
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) {
-        navigate("/");
-      }
-    });
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (session) {
-        navigate("/");
-      }
-    });
-
-    return () => subscription.unsubscribe();
-  }, [navigate]);
+    if (user) {
+      navigate("/");
+    }
+  }, [user, navigate]);
 
   const handleSignUp = async (e) => {
     e.preventDefault();
@@ -49,25 +40,14 @@ const Auth = () => {
 
     try {
       const validated = signUpSchema.parse(signUpData);
-      const redirectUrl = `${window.location.origin}/`;
-
-      const { error } = await supabase.auth.signUp({
-        email: validated.email,
-        password: validated.password,
-        options: {
-          emailRedirectTo: redirectUrl,
-          data: {
-            full_name: validated.fullName,
-          },
-        },
-      });
-
-      if (error) throw error;
+      await signUp(validated.email, validated.password, validated.fullName);
 
       toast({
         title: "Success!",
         description: "Account created successfully. You can now log in.",
       });
+      
+      setSignUpData({ email: "", password: "", fullName: "" });
     } catch (error) {
       if (error instanceof z.ZodError) {
         toast({
@@ -93,13 +73,12 @@ const Auth = () => {
 
     try {
       const validated = loginSchema.parse(loginData);
+      await signIn(validated.email, validated.password);
 
-      const { error } = await supabase.auth.signInWithPassword({
-        email: validated.email,
-        password: validated.password,
+      toast({
+        title: "Success!",
+        description: "Logged in successfully.",
       });
-
-      if (error) throw error;
     } catch (error) {
       if (error instanceof z.ZodError) {
         toast({
@@ -126,8 +105,8 @@ const Auth = () => {
           <div className="flex justify-center mb-4">
             <ShoppingBag className="h-12 w-12 text-primary" />
           </div>
-          <CardTitle>Thapar OLX</CardTitle>
-          <CardDescription>Your campus marketplace</CardDescription>
+          <CardTitle className="text-2xl">Welcome to Thapar OLX</CardTitle>
+          <CardDescription>Buy and sell within your campus community</CardDescription>
         </CardHeader>
         <CardContent>
           <Tabs defaultValue="login" className="w-full">
@@ -143,7 +122,6 @@ const Auth = () => {
                   <Input
                     id="login-email"
                     type="email"
-                    placeholder="your@email.com"
                     value={loginData.email}
                     onChange={(e) => setLoginData({ ...loginData, email: e.target.value })}
                     required
@@ -171,7 +149,6 @@ const Auth = () => {
                   <Label htmlFor="signup-name">Full Name</Label>
                   <Input
                     id="signup-name"
-                    placeholder="John Doe"
                     value={signUpData.fullName}
                     onChange={(e) => setSignUpData({ ...signUpData, fullName: e.target.value })}
                     required
@@ -182,7 +159,6 @@ const Auth = () => {
                   <Input
                     id="signup-email"
                     type="email"
-                    placeholder="your@email.com"
                     value={signUpData.email}
                     onChange={(e) => setSignUpData({ ...signUpData, email: e.target.value })}
                     required

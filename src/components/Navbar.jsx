@@ -1,6 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ShoppingBag, User, LogOut, Menu, X, Search } from "lucide-react";
@@ -9,27 +9,15 @@ import { toast } from "@/hooks/use-toast";
 const Navbar = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const [user, setUser] = useState(null);
+  const { user, signOut } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   
   const isOnBrowsePage = location.pathname === "/browse";
 
-  useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null);
-    });
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      setUser(session?.user ?? null);
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
-
   const handleLogout = async () => {
-    await supabase.auth.signOut();
+    await signOut();
     toast({ title: "Logged out successfully" });
     navigate("/auth");
   };
@@ -109,7 +97,7 @@ const Navbar = () => {
 
         {/* Mobile Navigation */}
         {mobileMenuOpen && (
-          <div className="md:hidden py-4 space-y-2">
+          <div className="md:hidden pb-4 space-y-2">
             <Link to="/browse" onClick={() => setMobileMenuOpen(false)}>
               <Button variant="ghost" className="w-full justify-start">Browse</Button>
             </Link>
@@ -124,7 +112,7 @@ const Navbar = () => {
                     Dashboard
                   </Button>
                 </Link>
-                <Button variant="outline" className="w-full justify-start" onClick={handleLogout}>
+                <Button variant="outline" onClick={handleLogout} className="w-full justify-start">
                   <LogOut className="mr-2 h-4 w-4" />
                   Logout
                 </Button>
