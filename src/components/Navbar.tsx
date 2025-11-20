@@ -53,7 +53,10 @@ const Navbar = () => {
                     <Input
                       placeholder="Search products..."
                       value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
+                      onChange={(e) => {
+                        setSearchTerm(e.target.value);
+                        navigate(`/browse?search=${encodeURIComponent(e.target.value)}`);
+                      }}
                       className="pl-10 w-64"
                       onBlur={() => {
                         if (!searchTerm) setSearchOpen(false);
