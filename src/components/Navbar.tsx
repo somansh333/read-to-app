@@ -1,14 +1,20 @@
 import { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { ShoppingBag, User, LogOut, Menu, X } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { ShoppingBag, User, LogOut, Menu, X, Search } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 
 const Navbar = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [user, setUser] = useState<any>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  
+  const isOnBrowsePage = location.pathname === "/browse";
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -39,9 +45,33 @@ const Navbar = () => {
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-4">
-            <Link to="/browse">
-              <Button variant="ghost">Browse</Button>
-            </Link>
+            {isOnBrowsePage ? (
+              <div className="flex items-center gap-2">
+                {searchOpen ? (
+                  <div className="relative">
+                    <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      placeholder="Search products..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="pl-10 w-64"
+                      onBlur={() => {
+                        if (!searchTerm) setSearchOpen(false);
+                      }}
+                      autoFocus
+                    />
+                  </div>
+                ) : (
+                  <Button variant="ghost" onClick={() => setSearchOpen(true)}>
+                    <Search className="h-4 w-4" />
+                  </Button>
+                )}
+              </div>
+            ) : (
+              <Link to="/browse">
+                <Button variant="ghost">Browse</Button>
+              </Link>
+            )}
             {user ? (
               <>
                 <Link to="/create-listing">
