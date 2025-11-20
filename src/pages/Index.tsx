@@ -34,7 +34,7 @@ const Index = () => {
       <Navbar />
       
       {/* Hero Section with Background */}
-      <section className="relative min-h-[600px] flex items-center">
+      <section className="relative min-h-screen flex items-center">
         <div 
           className="absolute inset-0 bg-cover bg-center bg-no-repeat"
           style={{ backgroundImage: `url(${thaparCampus})` }}
