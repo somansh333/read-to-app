@@ -1,26 +1,16 @@
 import { useState } from "react";
-import { Link, useNavigate, useLocation } from "react-router-dom";
-import { useAuth } from "@/contexts/AuthContext";
+import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ShoppingBag, User, LogOut, Menu, X, Search } from "lucide-react";
-import { toast } from "@/hooks/use-toast";
+import { ShoppingBag, Menu, X, Search } from "lucide-react";
 
 const Navbar = () => {
-  const navigate = useNavigate();
   const location = useLocation();
-  const { user, signOut } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   
   const isOnBrowsePage = location.pathname === "/browse";
-
-  const handleLogout = async () => {
-    await signOut();
-    toast({ title: "Logged out successfully" });
-    navigate("/auth");
-  };
 
   return (
     <nav className="border-b bg-card">
@@ -41,10 +31,7 @@ const Navbar = () => {
                     <Input
                       placeholder="Search products..."
                       value={searchTerm}
-                      onChange={(e) => {
-                        setSearchTerm(e.target.value);
-                        navigate(`/browse?search=${encodeURIComponent(e.target.value)}`);
-                      }}
+                      onChange={(e) => setSearchTerm(e.target.value)}
                       className="pl-10 w-64"
                       onBlur={() => {
                         if (!searchTerm) setSearchOpen(false);
@@ -63,27 +50,9 @@ const Navbar = () => {
                 <Button variant="ghost">Browse</Button>
               </Link>
             )}
-            {user ? (
-              <>
-                <Link to="/create-listing">
-                  <Button variant="ghost">Sell</Button>
-                </Link>
-                <Link to="/dashboard">
-                  <Button variant="ghost">
-                    <User className="mr-2 h-4 w-4" />
-                    Dashboard
-                  </Button>
-                </Link>
-                <Button variant="outline" onClick={handleLogout}>
-                  <LogOut className="mr-2 h-4 w-4" />
-                  Logout
-                </Button>
-              </>
-            ) : (
-              <Link to="/auth">
-                <Button>Login / Sign Up</Button>
-              </Link>
-            )}
+            <Link to="/create-listing">
+              <Button variant="ghost">Sell</Button>
+            </Link>
           </div>
 
           {/* Mobile Menu Button */}
@@ -101,27 +70,9 @@ const Navbar = () => {
             <Link to="/browse" onClick={() => setMobileMenuOpen(false)}>
               <Button variant="ghost" className="w-full justify-start">Browse</Button>
             </Link>
-            {user ? (
-              <>
-                <Link to="/create-listing" onClick={() => setMobileMenuOpen(false)}>
-                  <Button variant="ghost" className="w-full justify-start">Sell</Button>
-                </Link>
-                <Link to="/dashboard" onClick={() => setMobileMenuOpen(false)}>
-                  <Button variant="ghost" className="w-full justify-start">
-                    <User className="mr-2 h-4 w-4" />
-                    Dashboard
-                  </Button>
-                </Link>
-                <Button variant="outline" onClick={handleLogout} className="w-full justify-start">
-                  <LogOut className="mr-2 h-4 w-4" />
-                  Logout
-                </Button>
-              </>
-            ) : (
-              <Link to="/auth" onClick={() => setMobileMenuOpen(false)}>
-                <Button className="w-full">Login / Sign Up</Button>
-              </Link>
-            )}
+            <Link to="/create-listing" onClick={() => setMobileMenuOpen(false)}>
+              <Button variant="ghost" className="w-full justify-start">Sell</Button>
+            </Link>
           </div>
         )}
       </div>

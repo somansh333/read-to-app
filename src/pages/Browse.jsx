@@ -1,65 +1,41 @@
-import { useState, useEffect } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import ProductCard from "@/components/ProductCard";
 import Navbar from "@/components/Navbar";
 import { Search } from "lucide-react";
-import { getProducts, getCategories, getUserById } from "@/utils/localStorage";
+import { MOCK_PRODUCTS, CATEGORIES } from "@/data/mockData";
 
 const Browse = () => {
-  const [searchParams] = useSearchParams();
-  const [products, setProducts] = useState([]);
-  const [categories, setCategories] = useState([]);
-  const [searchTerm, setSearchTerm] = useState(searchParams.get("search") || "");
+  const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
-  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const search = searchParams.get("search");
-    if (search) setSearchTerm(search);
-  }, [searchParams]);
-
-  useEffect(() => {
-    fetchData();
-  }, [selectedCategory]);
-
-  const fetchData = () => {
-    setLoading(true);
-    
-    // Get categories
-    const cats = getCategories();
-    setCategories(cats);
-
-    // Get products
-    let allProducts = getProducts()
-      .filter(p => p.status === 'available')
-      .map(product => {
-        const category = cats.find(c => c.id === product.category_id);
-        const seller = getUserById(product.user_id);
-        return {
-          ...product,
-          categories: category ? { name: category.name } : null,
-          profiles: seller ? { full_name: seller.full_name, phone: seller.phone } : null,
-        };
-      });
-
-    // Filter by category
-    if (selectedCategory !== "all") {
-      allProducts = allProducts.filter(p => p.category_id === selectedCategory);
-    }
-
-    // Sort by date
-    allProducts.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-
-    setProducts(allProducts);
-    setLoading(false);
-  };
-
-  const filteredProducts = products.filter((product) =>
-    product.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    product.description.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  // Filter products
+  const filteredProducts = MOCK_PRODUCTS
+    .filter(p => p.status === 'available')
+    .filter(product => {
+      // Category filter
+      if (selectedCategory !== "all" && product.category_id !== selectedCategory) {
+        return false;
+      }
+      // Search filter
+      if (searchTerm && !product.title.toLowerCase().includes(searchTerm.toLowerCase()) &&
+          !product.description.toLowerCase().includes(searchTerm.toLowerCase())) {
+        return false;
+      }
+      return true;
+    })
+    .map(product => {
+      const category = CATEGORIES.find(c => c.id === product.category_id);
+      return {
+        ...product,
+        categories: category ? { name: category.name } : null,
+        profiles: {
+          full_name: product.seller_name,
+          phone: product.seller_phone,
+        },
+      };
+    });
 
   return (
     <div className="min-h-screen bg-background">
@@ -83,7 +59,7 @@ const Browse = () => {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Categories</SelectItem>
-              {categories.map((cat) => (
+              {CATEGORIES.map((cat) => (
                 <SelectItem key={cat.id} value={cat.id}>
                   {cat.name}
                 </SelectItem>
@@ -92,9 +68,7 @@ const Browse = () => {
           </Select>
         </div>
 
-        {loading ? (
-          <div className="text-center py-12">Loading...</div>
-        ) : filteredProducts.length === 0 ? (
+        {filteredProducts.length === 0 ? (
           <div className="text-center py-12 text-muted-foreground">
             No products found. Try adjusting your search.
           </div>

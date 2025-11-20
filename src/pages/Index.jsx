@@ -1,37 +1,27 @@
-import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import Navbar from "@/components/Navbar";
 import ProductCard from "@/components/ProductCard";
 import { ShoppingBag, TrendingUp, Users, Shield } from "lucide-react";
 import thaparCampus from "@/assets/thapar-campus.jpg";
-import { getProducts, getCategories, getUserById } from "@/utils/localStorage";
+import { MOCK_PRODUCTS, CATEGORIES } from "@/data/mockData";
 
 const Index = () => {
-  const [featuredProducts, setFeaturedProducts] = useState([]);
-
-  useEffect(() => {
-    fetchFeaturedProducts();
-  }, []);
-
-  const fetchFeaturedProducts = () => {
-    const categories = getCategories();
-    const allProducts = getProducts()
-      .filter(p => p.status === 'available')
-      .slice(0, 6)
-      .map(product => {
-        const category = categories.find(c => c.id === product.category_id);
-        const seller = getUserById(product.user_id);
-        return {
-          ...product,
-          categories: category ? { name: category.name } : null,
-          profiles: seller ? { full_name: seller.full_name, phone: seller.phone } : null,
-        };
-      });
-
-    allProducts.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-    setFeaturedProducts(allProducts);
-  };
+  // Get featured products (first 6 available)
+  const featuredProducts = MOCK_PRODUCTS
+    .filter(p => p.status === 'available')
+    .slice(0, 6)
+    .map(product => {
+      const category = CATEGORIES.find(c => c.id === product.category_id);
+      return {
+        ...product,
+        categories: category ? { name: category.name } : null,
+        profiles: {
+          full_name: product.seller_name,
+          phone: product.seller_phone,
+        },
+      };
+    });
 
   return (
     <div className="min-h-screen bg-background">
@@ -100,17 +90,11 @@ const Index = () => {
       <section className="py-16">
         <div className="container mx-auto px-4">
           <h2 className="text-3xl font-bold mb-8">Recent Listings</h2>
-          {featuredProducts.length === 0 ? (
-            <div className="text-center py-12 text-muted-foreground">
-              No products available yet. Be the first to list!
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {featuredProducts.map((product) => (
-                <ProductCard key={product.id} product={product} />
-              ))}
-            </div>
-          )}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {featuredProducts.map((product) => (
+              <ProductCard key={product.id} product={product} />
+            ))}
+          </div>
           <div className="text-center mt-8">
             <Link to="/browse">
               <Button size="lg">View All Products</Button>
