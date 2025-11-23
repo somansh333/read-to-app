@@ -44,14 +44,14 @@ const Index = () => {
           <p className="text-xl mb-8 max-w-2xl mx-auto text-white/90">
             Buy and sell within the campus community. Safe, simple, and convenient marketplace for Thapar students.
           </p>
-          <div className="flex gap-6 justify-center mt-8">
+          <div className="flex gap-4 justify-center mt-6">
             <Link to="/browse">
-              <Button size="lg" className="border-4 border-[#7c2d3a] bg-[#7c2d3a] hover:bg-[#5a1f2a] text-white shadow-lg px-8 py-6 rounded-xl text-lg">
+              <Button size="lg" className="border-3 border-[#7c2d3a] bg-[#7c2d3a] hover:bg-[#5a1f2a] text-white shadow-lg px-6 py-3 rounded-lg">
                 Browse Products
               </Button>
             </Link>
             <Link to="/create-listing">
-              <Button size="lg" variant="outline" className="border-4 border-[#7c2d3a] bg-white/10 text-white hover:bg-white/20 shadow-lg px-8 py-6 rounded-xl text-lg">
+              <Button size="lg" variant="outline" className="border-3 border-[#7c2d3a] bg-white/10 text-white hover:bg-white/20 shadow-lg px-6 py-3 rounded-lg">
                 Start Selling
               </Button>
             </Link>
@@ -97,9 +97,9 @@ const Index = () => {
               <ProductCard key={product.id} product={product} />
             ))}
           </div>
-          <div className="text-center mt-12">
+          <div className="text-center mt-10">
             <Link to="/browse">
-              <Button size="lg" className="border-4 border-[#7c2d3a] bg-[#7c2d3a] hover:bg-[#5a1f2a] text-white shadow-lg px-8 py-6 rounded-xl text-lg">
+              <Button size="lg" className="border-3 border-[#7c2d3a] bg-[#7c2d3a] hover:bg-[#5a1f2a] text-white shadow-lg px-6 py-3 rounded-lg">
                 View All Products
               </Button>
             </Link>
