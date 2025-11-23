@@ -1,19 +1,25 @@
 import { useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ShoppingBag, Menu, X, Search } from "lucide-react";
 
 const Navbar = () => {
-  const location = useLocation();
+  const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
-  
-  const isOnBrowsePage = location.pathname === "/browse";
+
+  const handleSearch = () => {
+    if (searchTerm.trim()) {
+      navigate(`/browse?search=${encodeURIComponent(searchTerm)}`);
+      setSearchOpen(false);
+      setSearchTerm("");
+    }
+  };
 
   return (
-    <nav className="border-b bg-card">
+    <nav className="border-b bg-card sticky top-0 z-50">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           <Link to="/" className="flex items-center space-x-2">
@@ -23,33 +29,32 @@ const Navbar = () => {
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-4">
-            {isOnBrowsePage ? (
-              <div className="flex items-center gap-2">
-                {searchOpen ? (
-                  <div className="relative">
-                    <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                    <Input
-                      placeholder="Search products..."
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                      className="pl-10 w-64"
-                      onBlur={() => {
+            <div className="flex items-center gap-2">
+              {searchOpen ? (
+                <div className="relative">
+                  <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Search products..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') handleSearch();
+                    }}
+                    className="pl-10 w-64"
+                    onBlur={() => {
+                      setTimeout(() => {
                         if (!searchTerm) setSearchOpen(false);
-                      }}
-                      autoFocus
-                    />
-                  </div>
-                ) : (
-                  <Button variant="ghost" onClick={() => setSearchOpen(true)}>
-                    <Search className="h-4 w-4" />
-                  </Button>
-                )}
-              </div>
-            ) : (
-              <Link to="/browse">
-                <Button variant="ghost">Browse</Button>
-              </Link>
-            )}
+                      }, 200);
+                    }}
+                    autoFocus
+                  />
+                </div>
+              ) : (
+                <Button variant="ghost" onClick={() => setSearchOpen(true)}>
+                  <Search className="h-4 w-4" />
+                </Button>
+              )}
+            </div>
             <Link to="/create-listing">
               <Button variant="ghost">Sell</Button>
             </Link>
@@ -67,9 +72,21 @@ const Navbar = () => {
         {/* Mobile Navigation */}
         {mobileMenuOpen && (
           <div className="md:hidden pb-4 space-y-2">
-            <Link to="/browse" onClick={() => setMobileMenuOpen(false)}>
-              <Button variant="ghost" className="w-full justify-start">Browse</Button>
-            </Link>
+            <div className="relative">
+              <Search className="absolute left-6 top-3 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search products..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    handleSearch();
+                    setMobileMenuOpen(false);
+                  }
+                }}
+                className="pl-10 w-full"
+              />
+            </div>
             <Link to="/create-listing" onClick={() => setMobileMenuOpen(false)}>
               <Button variant="ghost" className="w-full justify-start">Sell</Button>
             </Link>
