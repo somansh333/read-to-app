@@ -46,10 +46,12 @@ const Index = () => {
           </p>
           <div className="flex gap-4 justify-center">
             <Link to="/browse">
-              <Button size="lg">Browse Products</Button>
+              <Button size="lg" className="border-4 border-[#7c2d3a] bg-[#7c2d3a] hover:bg-[#5a1f2a] text-white shadow-lg">
+                Browse Products
+              </Button>
             </Link>
             <Link to="/create-listing">
-              <Button size="lg" variant="outline" className="bg-white/10 text-white border-white/20 hover:bg-white/20">
+              <Button size="lg" variant="outline" className="border-4 border-[#7c2d3a] bg-white/10 text-white hover:bg-white/20 shadow-lg">
                 Start Selling
               </Button>
             </Link>
@@ -97,7 +99,9 @@ const Index = () => {
           </div>
           <div className="text-center mt-8">
             <Link to="/browse">
-              <Button size="lg">View All Products</Button>
+              <Button size="lg" className="border-4 border-[#7c2d3a] bg-[#7c2d3a] hover:bg-[#5a1f2a] text-white shadow-lg">
+                View All Products
+              </Button>
             </Link>
           </div>
         </div>
